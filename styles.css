@@ -1,0 +1,131 @@
+
+:root{
+  --bg:#0b0f14;
+  --panel:#0f1620;
+  --muted:#93a4b5;
+  --text:#eaf0f6;
+  --accent:#5eead4;
+  --accent2:#60a5fa;
+  --border:rgba(255,255,255,.08);
+  --shadow: 0 12px 30px rgba(0,0,0,.45);
+  --radius:16px;
+  --max:1100px;
+  --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:var(--font);
+  background: radial-gradient(1200px 800px at 15% 10%, rgba(96,165,250,.18), transparent 55%),
+              radial-gradient(1000px 700px at 85% 0%, rgba(94,234,212,.12), transparent 55%),
+              var(--bg);
+  color:var(--text);
+}
+a{color:inherit}
+.container{max-width:var(--max); margin:0 auto; padding:24px}
+.nav{
+  position:sticky; top:0; z-index:10;
+  backdrop-filter: blur(12px);
+  background: rgba(11,15,20,.7);
+  border-bottom:1px solid var(--border);
+}
+.nav-inner{display:flex; align-items:center; justify-content:space-between; gap:14px; max-width:var(--max); margin:0 auto; padding:14px 24px}
+.brand{display:flex; flex-direction:column; gap:2px}
+.brand strong{font-size:15px; letter-spacing:.2px}
+.brand span{font-size:12px; color:var(--muted)}
+.navlinks{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+.pill{
+  text-decoration:none;
+  font-size:13px;
+  padding:8px 12px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  background:rgba(255,255,255,.03);
+}
+.pill:hover{border-color:rgba(94,234,212,.55)}
+.hero{
+  padding:26px 0 12px;
+  display:grid;
+  grid-template-columns: 1.2fr .8fr;
+  gap:18px;
+  align-items:stretch;
+}
+@media (max-width:900px){.hero{grid-template-columns:1fr}}
+.card{
+  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+}
+.card.pad{padding:18px}
+.kicker{color:var(--muted); font-size:13px}
+h1{margin:8px 0 8px; font-size:34px; line-height:1.1}
+h2{margin:0 0 10px; font-size:20px}
+h3{margin:18px 0 8px; font-size:16px}
+p{margin:10px 0; color:rgba(234,240,246,.92); line-height:1.55}
+.small{font-size:13px; color:var(--muted)}
+.cta-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
+.btn{
+  display:inline-flex; align-items:center; gap:10px;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.03);
+  text-decoration:none;
+  font-size:13px;
+}
+.btn.primary{border-color:rgba(94,234,212,.55); background:rgba(94,234,212,.10)}
+.btn:hover{transform: translateY(-1px); transition: .15s ease}
+.grid{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:14px;
+}
+@media (max-width:950px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:640px){.grid{grid-template-columns:1fr}}
+.proj{
+  overflow:hidden;
+}
+.thumb{
+  height:150px;
+  background: rgba(0,0,0,.25);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.thumb img{width:100%; height:100%; object-fit:cover; opacity:.92}
+.proj-body{padding:14px}
+.tagrow{display:flex; gap:6px; flex-wrap:wrap; margin-top:10px}
+.tag{
+  font-size:11px;
+  padding:4px 8px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.02);
+  color:rgba(234,240,246,.86);
+}
+.section-title{display:flex; align-items:end; justify-content:space-between; gap:10px; margin:22px 0 12px}
+.section-title a{font-size:13px; color:var(--muted); text-decoration:none}
+.section-title a:hover{color:var(--text)}
+.footer{padding:28px 0 60px; color:var(--muted); font-size:12px}
+hr.sep{border:none; border-top:1px solid var(--border); margin:18px 0}
+.proj-page{
+  display:grid;
+  grid-template-columns: 1fr 420px;
+  gap:16px;
+}
+@media (max-width:980px){.proj-page{grid-template-columns:1fr}}
+figure{margin:0}
+figure img{width:100%; border-radius:14px; border:1px solid var(--border)}
+ul{margin:8px 0 12px 18px}
+li{margin:6px 0; color:rgba(234,240,246,.92); line-height:1.45}
+.notice{
+  border-left:3px solid rgba(96,165,250,.7);
+  padding:10px 12px;
+  background:rgba(96,165,250,.08);
+  border-radius:12px;
+  color:rgba(234,240,246,.92);
+  font-size:13px;
+}

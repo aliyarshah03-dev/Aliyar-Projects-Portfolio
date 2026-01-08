@@ -1,0 +1,218 @@
+
+const state = { data: null };
+
+async function loadData(){
+  const res = await fetch('content/projects.json');
+  state.data = await res.json();
+}
+
+function el(tag, attrs={}, ...children){
+  const node = document.createElement(tag);
+  for(const [k,v] of Object.entries(attrs)){
+    if(k === 'class') node.className = v;
+    else if(k.startsWith('on') && typeof v === 'function') node.addEventListener(k.slice(2), v);
+    else node.setAttribute(k, v);
+  }
+  for(const ch of children){
+    if(ch == null) continue;
+    node.appendChild(typeof ch === 'string' ? document.createTextNode(ch) : ch);
+  }
+  return node;
+}
+
+function getRoute(){
+  const hash = location.hash || '#/';
+  const parts = hash.replace(/^#\//,'').split('/').filter(Boolean);
+  return parts; // [] => home, ["cv"], ["design"], ["research"], ["project", id]
+}
+
+function setActiveNav(){
+  const route = getRoute();
+  const page = route[0] || 'home';
+  document.querySelectorAll('[data-nav]').forEach(a=>{
+    a.style.borderColor = 'rgba(255,255,255,.08)';
+    if(a.dataset.nav === page) a.style.borderColor = 'rgba(94,234,212,.55)';
+  });
+}
+
+function projectCard(p){
+  return el('a', {class:'card proj', href:`#/project/${p.id}`},
+    el('div',{class:'thumb'},
+      el('img',{src:`assets/${p.heroImage}`, alt:p.title})
+    ),
+    el('div',{class:'proj-body'},
+      el('div',{class:'kicker'}, (p.category==='design'?'Design project':'Research project')),
+      el('h2',{}, p.title),
+      el('p',{class:'small'}, p.subtitle || ''),
+      el('div',{class:'tagrow'}, ...(p.tags||[]).slice(0,5).map(t=>el('span',{class:'tag'},t)))
+    )
+  );
+}
+
+function renderHome(root){
+  const {links, publications, projects} = state.data;
+  const topDesign = projects.filter(p=>p.category==='design').slice(0,6);
+  const topResearch = projects.filter(p=>p.category==='research').slice(0,6);
+
+  root.appendChild(
+    el('div',{class:'hero'},
+      el('div',{class:'card pad'},
+        el('div',{class:'kicker'},'PhD-focused engineering portfolio (US programs)'),
+        el('h1',{},'Syed Aliyar Shah'),
+        el('p',{},'Mechanical Engineer (NUST) with industry experience in EV battery systems, power electronics packaging, and CAE (FEA/CFD). Research interests include composites, solid mechanics, and electro‑mechanical systems.'),
+        el('div',{class:'cta-row'},
+          el('a',{class:'btn primary',href:'#/cv'},'Open CV'),
+          el('a',{class:'btn',href:'#/design'},'Design Portfolio'),
+          el('a',{class:'btn',href:'#/research'},'Research Portfolio')
+        ),
+        el('hr',{class:'sep'}),
+        el('div',{class:'small'}, `Contact: `),
+        el('div',{class:'cta-row'},
+          el('a',{class:'btn',href:`mailto:${links.email}`},links.email),
+          el('a',{class:'btn',href:links.linkedin, target:'_blank', rel:'noreferrer'},'LinkedIn'),
+          el('span',{class:'btn'}, links.phone)
+        )
+      ),
+      el('div',{class:'card pad'},
+        el('h2',{},'Publications (from CV)'),
+        el('div',{class:'small'},'Keep this list strictly accurate. Link only to publicly accessible copies.'),
+        el('ul',{}, ...(publications||[]).map(pub=>{
+          const li = el('li',{}, `${pub.title} — ${pub.status}`);
+          if(pub.link){
+            li.appendChild(el('span',{},' ('));
+            li.appendChild(el('a',{href:pub.link,target:'_blank',rel:'noreferrer'},'link'));
+            li.appendChild(el('span',{},')'));
+          }
+          return li;
+        })),
+        el('div',{class:'notice'},
+          'Important: Some project results in the provided PDFs are written as claims (e.g., “20 min at 10C”, “-40°C operation”). For PhD reviewers, add evidence: test setup, assumptions, plots, standards, or public references.'
+        )
+      )
+    )
+  );
+
+  root.appendChild(el('div',{class:'section-title'},
+    el('h2',{},'Featured Design Projects'),
+    el('a',{href:'#/design'},'View all →')
+  ));
+  root.appendChild(el('div',{class:'grid'}, ...topDesign.map(projectCard)));
+
+  root.appendChild(el('div',{class:'section-title'},
+    el('h2',{},'Featured Research Projects'),
+    el('a',{href:'#/research'},'View all →')
+  ));
+  root.appendChild(el('div',{class:'grid'}, ...topResearch.map(projectCard)));
+
+  root.appendChild(el('div',{class:'footer'},
+    '© Syed Aliyar Shah — built as a static site. Update projects by editing content/projects.json and adding images into /assets.'
+  ));
+}
+
+function renderList(root, category){
+  const title = category==='design' ? 'Design Projects Portfolio' : 'Research Projects Portfolio';
+  const desc = category==='design'
+    ? 'Industry, competition, and engineering design work (CAD/CAE, packaging, manufacturing-readiness).'
+    : 'Research papers, simulations, and materials/mechanics investigations.';
+  root.appendChild(el('div',{class:'card pad'},
+    el('div',{class:'kicker'},'Portfolio'),
+    el('h1',{}, title),
+    el('p',{}, desc),
+    el('div',{class:'cta-row'},
+      el('a',{class:'btn',href:'#/cv'},'CV'),
+      el('a',{class:'btn primary',href: category==='design'?'#/design':'#/research'}, category==='design'?'Design':'Research')
+    )
+  ));
+  const items = state.data.projects.filter(p=>p.category===category);
+  root.appendChild(el('div',{class:'section-title'}, el('h2',{},'Projects'), el('span',{class:'small'},`${items.length} items`)));
+  root.appendChild(el('div',{class:'grid'}, ...items.map(projectCard)));
+  root.appendChild(el('div',{class:'footer'}, 'Tip: click a project card to open its detailed page. Use Back to return.'));
+}
+
+function renderProject(root, id){
+  const p = state.data.projects.find(x=>x.id===id);
+  if(!p){
+    root.appendChild(el('div',{class:'card pad'}, el('h1',{},'Not found'), el('a',{href:'#/'},'Go home')));
+    return;
+  }
+  const aside = el('div',{class:'card pad'},
+    el('div',{class:'kicker'}, p.category==='design'?'Design project':'Research project'),
+    el('h2',{},'At a glance'),
+    el('p',{class:'small'}, p.period || ''),
+    el('div',{class:'tagrow'}, ...(p.tags||[]).map(t=>el('span',{class:'tag'},t))),
+    el('hr',{class:'sep'}),
+    el('h3',{},'Links'),
+    ...(p.links && p.links.length ? p.links.map(l=>el('a',{class:'btn',href:l.url,target:'_blank',rel:'noreferrer'},l.label)) : [el('div',{class:'small'},'No public links added yet.')]),
+    el('hr',{class:'sep'}),
+    el('div',{class:'small'},'Evidence note'),
+    el('div',{class:'notice'}, p.evidenceNote || 'Add references, plots, and validation notes to increase credibility for PhD reviewers.')
+  );
+
+  const main = el('div',{class:'card pad'},
+    el('a',{class:'pill',href: p.category==='design'?'#/design':'#/research'},'← Back'),
+    el('h1',{}, p.title),
+    el('p',{}, p.subtitle || ''),
+    el('figure',{}, el('img',{src:`assets/${p.heroImage}`, alt:p.title})),
+    el('h3',{},'What?'),
+    el('ul',{}, ...(p.what||[]).map(x=>el('li',{},x))),
+    el('h3',{},'How?'),
+    el('ul',{}, ...(p.how||[]).map(x=>el('li',{},x))),
+    el('h3',{},'Results?'),
+    el('ul',{}, ...(p.results||[]).map(x=>el('li',{},x))),
+    el('hr',{class:'sep'}),
+    el('div',{class:'small'},'Want to add more figures? Put images in /assets and reference them in content/projects.json.'),
+    el('div',{class:'cta-row'},
+      el('a',{class:'btn',href:'assets/Aliyar_Project_Portfolio.pdf', target:'_blank', rel:'noreferrer'},'Download Project Portfolio (PDF)'),
+      el('a',{class:'btn',href:'assets/Aliyar_Portfolio_Full.pdf', target:'_blank', rel:'noreferrer'},'Download Full Portfolio (PDF)')
+    )
+  );
+
+  root.appendChild(el('div',{class:'proj-page'}, main, aside));
+  root.appendChild(el('div',{class:'footer'}, 'If any work is proprietary, replace sensitive images with sanitized diagrams and describe your role at a high level.'));
+}
+
+function renderCV(root){
+  root.appendChild(el('div',{class:'card pad'},
+    el('div',{class:'kicker'},'Curriculum Vitae'),
+    el('h1',{},'CV'),
+    el('p',{},'You can download the PDF or view it inline below.'),
+    el('div',{class:'cta-row'},
+      el('a',{class:'btn primary',href:'assets/Aliyar_CV_Oct_25.pdf', target:'_blank', rel:'noreferrer'},'Download CV (PDF)'),
+      el('a',{class:'btn',href:'#/design'},'Design Portfolio'),
+      el('a',{class:'btn',href:'#/research'},'Research Portfolio')
+    ),
+    el('hr',{class:'sep'}),
+    el('iframe',{
+      src:'assets/Aliyar_CV_Oct_25.pdf',
+      style:'width:100%; height:78vh; border:1px solid rgba(255,255,255,.08); border-radius:14px; background:rgba(0,0,0,.2)'
+    })
+  ));
+  root.appendChild(el('div',{class:'footer'},
+    'Editing tip: replace assets/Aliyar_CV_Oct_25.pdf with a newer version using the same filename to update the CV link.'
+  ));
+}
+
+function render(){
+  const root = document.getElementById('app');
+  root.innerHTML = '';
+  setActiveNav();
+  const route = getRoute();
+
+  if(route.length===0){
+    renderHome(root);
+    return;
+  }
+  if(route[0]==='cv'){ renderCV(root); return; }
+  if(route[0]==='design'){ renderList(root,'design'); return; }
+  if(route[0]==='research'){ renderList(root,'research'); return; }
+  if(route[0]==='project' && route[1]){ renderProject(root, route[1]); return; }
+
+  root.appendChild(el('div',{class:'card pad'}, el('h1',{},'Page not found'), el('a',{href:'#/'},'Go home')));
+}
+
+window.addEventListener('hashchange', render);
+
+(async function init(){
+  await loadData();
+  render();
+})();
